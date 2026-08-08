@@ -13,7 +13,11 @@ export function getDb() {
   }
 
   if (!dbInstance) {
-    const sql = neon(env.DATABASE_URL);
+    const sql = neon(env.DATABASE_URL, {
+      fetchOptions: {
+        signal: AbortSignal.timeout(60_000)
+      }
+    });
     dbInstance = drizzle(sql, { schema });
   }
 
