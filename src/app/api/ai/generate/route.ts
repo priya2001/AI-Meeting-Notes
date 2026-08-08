@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { meetings } from "@/lib/db/schema";
 import { env, llmApiKey } from "@/lib/env";
@@ -88,6 +89,29 @@ export async function POST(request: Request) {
   const notes = sanitizeMeetingNotes(generated.data);
   const dbClient = getDb();
   const userRecord = await syncCurrentUser(userId);
+
+  if (dbClient && userRecord && userRecord.subscriptionTier !== "pro") {
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const [usageRow] = await dbClient
+        .select({ count: sql<number>`count(*)` })
+        .from(meetings)
+        .where(and(eq(meetings.userId, userRecord.id), gte(meetings.createdAt, thirtyDaysAgo)));
+
+      if (Number(usageRow?.count ?? 0) >= 3) {
+        return NextResponse.json(
+          {
+            error: "Free plan limit reached. Upgrade to Pro to generate more notes."
+          },
+          { status: 402 }
+        );
+      }
+    } catch {
+      // If usage counting fails, allow generation but skip gating.
+    }
+  }
 
   let savedMeeting = null;
 

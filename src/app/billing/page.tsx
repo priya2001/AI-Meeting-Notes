@@ -1,21 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, CreditCard, Crown, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BadgeCheck, CreditCard, Crown, ShieldCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AuthMenu } from "@/components/auth-menu";
+import { BillingPanel } from "@/components/billing-panel";
 
 export default function BillingPage() {
   const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10 text-white lg:px-8">
+    <main className="mx-auto min-h-screen w-full max-w-7xl px-6 py-10 text-white lg:px-8">
       <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-200">Billing</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight">Manage your subscription</h1>
           <p className="mt-3 max-w-2xl text-white/65">
-            This page is the billing hub for plan status, payment method, and cancellation. Stripe wiring comes in the next phase.
+            Upgrade to Pro in test mode, confirm it through the webhook, and manage cancellation from the Stripe portal.
           </p>
         </div>
+
         <div className="flex flex-wrap items-center gap-3">
           {hasClerk ? (
             <AuthMenu />
@@ -27,57 +29,24 @@ export default function BillingPage() {
               Sign in
             </Link>
           )}
-          <Link href="/sign-up" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium text-slate-950 transition hover:bg-cyan-100">
-            Upgrade now <ArrowRight className="h-4 w-4" />
+          <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10">
+            <ArrowLeft className="h-4 w-4" />
+            Back to dashboard
           </Link>
         </div>
       </div>
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.95fr]">
-        <Card className="bg-slate-950/70">
-          <CardContent className="space-y-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-cyan-200">Current plan</p>
-                <h2 className="mt-1 text-3xl font-semibold">Starter</h2>
-              </div>
-              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-200">
-                Active
-              </span>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[
-                { label: "Price", value: "$0 / mo" },
-                { label: "Usage", value: "3 meetings" },
-                { label: "Renewal", value: "Monthly" }
-              ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/40">{item.label}</p>
-                  <p className="mt-2 text-lg font-medium text-white">{item.value}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <p className="flex items-center gap-2 text-sm font-medium text-white">
-                <CreditCard className="h-4 w-4 text-cyan-300" />
-                Payment method
-              </p>
-              <p className="mt-2 text-sm leading-7 text-white/60">
-                Stripe checkout will attach a real test card flow here. For now, this is the billing shell where subscription state will be displayed.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <BillingPanel />
 
         <Card className="bg-white/5">
           <CardContent className="space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">What you get</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">Plan summary</p>
             {[
-              { icon: BadgeCheck, title: "Plan upgrade", text: "Upgrade will be handled through Stripe checkout and webhook confirmation." },
-              { icon: Crown, title: "Unlocked features", text: "Paid users will remove the usage cap and get the full meeting notes workflow." },
-              { icon: ShieldCheck, title: "Safe cancellation", text: "The billing page will later support canceling or downgrading subscriptions." }
+              { icon: BadgeCheck, title: "Plan upgrade", text: "Stripe Checkout upgrades the account through a real webhook-confirmed subscription." },
+              { icon: Crown, title: "Unlocked features", text: "Pro removes the note cap and keeps your meeting history persistent." },
+              { icon: ShieldCheck, title: "Safe cancellation", text: "The billing portal lets customers manage or cancel without support intervention." },
+              { icon: CreditCard, title: "Test mode", text: "You can use Stripe test cards here so no real money moves." }
             ].map((item) => {
               const Icon = item.icon;
               return (

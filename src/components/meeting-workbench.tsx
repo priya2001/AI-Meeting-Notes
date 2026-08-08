@@ -73,6 +73,11 @@ export function MeetingWorkbench({ initialMeetings, displayName, plan, setupIssu
   const [isPending, setIsPending] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(initialMeetings.length === 0);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [currentPlan, setCurrentPlan] = useState(plan);
+  const [usageCount, setUsageCount] = useState<number>(0);
+  const [usageLimit, setUsageLimit] = useState<number | null>(3);
+  const [billingLoading, setBillingLoading] = useState(true);
+  const [billingError, setBillingError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -116,15 +121,61 @@ export function MeetingWorkbench({ initialMeetings, displayName, plan, setupIssu
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBillingStatus() {
+      setBillingLoading(true);
+      setBillingError(null);
+
+      try {
+        const response = await fetch("/api/billing/status", {
+          cache: "no-store"
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "Failed to load billing status.");
+        }
+
+        if (!cancelled) {
+          setCurrentPlan(payload.plan ?? "free");
+          setUsageCount(Number(payload.usageCount ?? 0));
+          setUsageLimit(payload.usageLimit ?? null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setBillingError(err instanceof Error ? err.message : "Failed to load billing status.");
+        }
+      } finally {
+        if (!cancelled) {
+          setBillingLoading(false);
+        }
+      }
+    }
+
+    void loadBillingStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const selectedMeeting = useMemo(
     () => meetings.find((meeting) => meeting.id === selectedId) ?? meetings[0] ?? null,
     [meetings, selectedId]
   );
+  const isOverLimit = currentPlan === "free" && usageLimit !== null && usageCount >= usageLimit;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setLastSaved(null);
+
+    if (isOverLimit) {
+      setError("Free plan limit reached. Upgrade to Pro to generate more notes.");
+      return;
+    }
 
     if (!transcript.trim()) {
       setError("Paste a transcript before generating notes.");
@@ -186,12 +237,29 @@ export function MeetingWorkbench({ initialMeetings, displayName, plan, setupIssu
               <div>
                 <p className="text-sm text-cyan-200">Workspace</p>
                 <h2 className="mt-1 text-3xl font-semibold">Welcome back, {displayName}</h2>
-                <p className="mt-2 text-sm text-white/60">Plan: {plan}</p>
+                <p className="mt-2 text-sm text-white/60">
+                  Plan: {billingLoading ? "Loading..." : currentPlan}
+                  {usageLimit !== null ? ` · ${usageCount}/${usageLimit} notes used` : ""}
+                </p>
               </div>
               <Button type="button" variant="secondary" onClick={loadSampleTranscript} className="w-fit">
                 Use sample transcript
               </Button>
             </div>
+
+            {billingError ? (
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-50">
+                <p className="font-medium">Billing sync issue</p>
+                <p className="mt-1 text-amber-50/80">{billingError}</p>
+              </div>
+            ) : null}
+
+            {isOverLimit ? (
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-50">
+                <p className="font-medium">Free plan limit reached</p>
+                <p className="mt-1 text-amber-50/80">Upgrade to Pro to keep generating meeting notes.</p>
+              </div>
+            ) : null}
 
             {setupIssues.length > 0 ? (
               <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-50">
@@ -243,6 +311,8 @@ export function MeetingWorkbench({ initialMeetings, displayName, plan, setupIssu
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Generating...
                     </>
+                  ) : isOverLimit ? (
+                    "Upgrade to Pro"
                   ) : (
                     <>
                       Generate notes <ArrowRight className="h-4 w-4" />
