@@ -3,8 +3,11 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MeetWise",
-  description: "AI meeting notes generator for summaries, action items, and decisions."
+  title: {
+    default: "MeetWise",
+    template: "%s | MeetWise"
+  },
+  description: "A real AI meeting notes SaaS for transcripts, summaries, action items, and subscription workflows."
 };
 
 export default function RootLayout({
