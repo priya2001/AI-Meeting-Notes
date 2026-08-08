@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft, BadgeCheck, BrainCircuit, Sparkles, ShieldCheck } from "lucide-react";
 import { SignUp } from "@clerk/nextjs";
