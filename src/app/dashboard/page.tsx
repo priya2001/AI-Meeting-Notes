@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { AuthMenu } from "@/components/auth-menu";
 import { MeetingWorkbench } from "@/components/meeting-workbench";
-import { env } from "@/lib/env";
+import { databaseUrl, env } from "@/lib/env";
 import { syncCurrentUser } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 
   const setupIssues = [
     !env.GROQ_API_KEY && !env.Groq_API_KEY && !env.OPENAI_API_KEY ? "Add GROQ_API_KEY so the transcript generator can run." : null,
-    !env.DATABASE_URL ? "Add DATABASE_URL so meeting notes can be saved and loaded." : null
+    !databaseUrl ? "Add DATABASE_POOL_URL or DATABASE_URL so meeting notes can be saved and loaded." : null
   ].filter((item): item is string => Boolean(item));
 
   return (
