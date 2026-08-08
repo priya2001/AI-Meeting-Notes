@@ -92,20 +92,24 @@ export async function POST(request: Request) {
   let savedMeeting = null;
 
   if (dbClient && userRecord) {
-    const [meeting] = await dbClient
-      .insert(meetings)
-      .values({
-        userId: userRecord.id,
-        title: notes.title,
-        transcript,
-        summary: notes.summary,
-        actionItems: formatBullets(notes.actionItems),
-        decisions: formatBullets(notes.decisions),
-        nextSteps: formatBullets(notes.nextSteps)
-      })
-      .returning();
+    try {
+      const [meeting] = await dbClient
+        .insert(meetings)
+        .values({
+          userId: userRecord.id,
+          title: notes.title,
+          transcript,
+          summary: notes.summary,
+          actionItems: formatBullets(notes.actionItems),
+          decisions: formatBullets(notes.decisions),
+          nextSteps: formatBullets(notes.nextSteps)
+        })
+        .returning();
 
-    savedMeeting = meeting ?? null;
+      savedMeeting = meeting ?? null;
+    } catch {
+      savedMeeting = null;
+    }
   }
 
   return NextResponse.json({
