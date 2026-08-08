@@ -1,5 +1,5 @@
-import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 import { env } from "@/lib/env";
 import * as schema from "./schema";
 
@@ -13,13 +13,8 @@ export function getDb() {
   }
 
   if (!dbInstance) {
-    const client = postgres(env.DATABASE_URL, {
-      max: 1,
-      ssl: env.DATABASE_URL.includes("localhost") ? false : "require",
-      connect_timeout: 60
-    });
-
-    dbInstance = drizzle(client, { schema });
+    const sql = neon(env.DATABASE_URL);
+    dbInstance = drizzle(sql, { schema });
   }
 
   return dbInstance;
