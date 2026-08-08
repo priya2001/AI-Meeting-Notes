@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, BadgeCheck, BrainCircuit, Sparkles, ShieldCheck } from "lucide-react";
-import { SignUp } from "@clerk/nextjs";
+import { ClerkLoaded, ClerkLoading, SignUp } from "@clerk/nextjs";
 
 const benefits = [
   {
@@ -41,24 +41,38 @@ export default function SignUpPage() {
         <section className="flex items-center justify-center order-2 lg:order-1">
           <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-slate-950/80 p-4 shadow-2xl shadow-cyan-950/25">
             <div className="rounded-[1.5rem] border border-white/10 bg-white p-2">
-              <SignUp
-                path="/sign-up"
-                routing="path"
-                forceRedirectUrl="/dashboard"
-                fallbackRedirectUrl="/dashboard"
-                signInUrl="/sign-in"
-                appearance={{
-                  elements: {
-                    rootBox: "mx-auto w-full",
-                    card: "shadow-none border-0 bg-transparent",
-                    headerTitle: "hidden",
-                    headerSubtitle: "hidden",
-                    socialButtonsBlockButton: "rounded-xl",
-                    formButtonPrimary: "rounded-xl bg-slate-950 hover:bg-slate-800",
-                    footerActionLink: "text-cyan-600 hover:text-cyan-700"
-                  }
-                }}
-              />
+              <ClerkLoading>
+                <div className="flex min-h-[580px] items-center justify-center rounded-[1.3rem] bg-slate-50 text-sm text-slate-500">
+                  Loading sign-up form...
+                </div>
+              </ClerkLoading>
+              <ClerkLoaded>
+                <SignUp
+                  path="/sign-up"
+                  routing="path"
+                  forceRedirectUrl="/dashboard"
+                  fallbackRedirectUrl="/dashboard"
+                  signInUrl="/sign-in"
+                  appearance={{
+                    elements: {
+                      rootBox: "mx-auto w-full",
+                      card: "shadow-none border-0 bg-transparent",
+                      headerTitle: "hidden",
+                      headerSubtitle: "hidden",
+                      socialButtonsBlockButton: "rounded-xl",
+                      formButtonPrimary: "rounded-xl bg-slate-950 hover:bg-slate-800",
+                      footerActionLink: "text-cyan-600 hover:text-cyan-700"
+                    }
+                  }}
+                />
+              </ClerkLoaded>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-3 px-2 text-sm">
+              <p className="text-white/55">Already have an account?</p>
+              <Link href="/sign-in" className="font-medium text-cyan-200 transition hover:text-cyan-100">
+                Sign in instead
+              </Link>
             </div>
           </div>
         </section>
