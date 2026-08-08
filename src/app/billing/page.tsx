@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, CreditCard, Crown, ShieldCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { AuthMenu } from "@/components/auth-menu";
 
 export default function BillingPage() {
+  const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10 text-white lg:px-8">
       <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
@@ -13,9 +16,21 @@ export default function BillingPage() {
             This page is the billing hub for plan status, payment method, and cancellation. Stripe wiring comes in the next phase.
           </p>
         </div>
-        <Link href="/sign-up" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium text-slate-950 transition hover:bg-cyan-100">
-          Upgrade now <ArrowRight className="h-4 w-4" />
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          {hasClerk ? (
+            <AuthMenu />
+          ) : (
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+            >
+              Sign in
+            </Link>
+          )}
+          <Link href="/sign-up" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium text-slate-950 transition hover:bg-cyan-100">
+            Upgrade now <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.95fr]">

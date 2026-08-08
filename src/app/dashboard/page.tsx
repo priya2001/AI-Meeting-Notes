@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3, CheckCircle2, FilePlus2, History, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { AuthMenu } from "@/components/auth-menu";
 
 const quickStats = [
   { label: "Notes this month", value: "0 / 3", note: "Starter plan limit" },
@@ -27,6 +28,8 @@ const shortcuts = [
 ];
 
 export default function DashboardPage() {
+  const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-7xl px-6 py-10 text-white lg:px-8">
       <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
@@ -38,7 +41,17 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {hasClerk ? (
+            <AuthMenu />
+          ) : (
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+            >
+              Sign in
+            </Link>
+          )}
           <Link
             href="/billing"
             className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10"
