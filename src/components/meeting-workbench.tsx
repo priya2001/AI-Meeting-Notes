@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { AlertCircle, ArrowRight, Clock3, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,50 @@ export function MeetingWorkbench({ initialMeetings, displayName, plan, setupIssu
   const [error, setError] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(initialMeetings.length === 0);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadHistory() {
+      setHistoryLoading(true);
+      setHistoryError(null);
+
+      try {
+        const response = await fetch("/api/meetings", {
+          cache: "no-store"
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? "Failed to load history.");
+        }
+
+        const records = Array.isArray(payload.meetings) ? (payload.meetings as MeetingRecord[]) : [];
+
+        if (!cancelled && records.length) {
+          setMeetings(records);
+          setSelectedId(records[0]?.id ?? null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setHistoryError(err instanceof Error ? err.message : "Failed to load history.");
+        }
+      } finally {
+        if (!cancelled) {
+          setHistoryLoading(false);
+        }
+      }
+    }
+
+    void loadHistory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const selectedMeeting = useMemo(
     () => meetings.find((meeting) => meeting.id === selectedId) ?? meetings[0] ?? null,
@@ -162,6 +206,19 @@ export function MeetingWorkbench({ initialMeetings, displayName, plan, setupIssu
                     </ul>
                   </div>
                 </div>
+              </div>
+            ) : null}
+
+            {historyError ? (
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-50">
+                <p className="font-medium">History sync issue</p>
+                <p className="mt-1 text-amber-50/80">{historyError}</p>
+              </div>
+            ) : null}
+
+            {historyLoading ? (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
+                Loading saved notes from your account...
               </div>
             ) : null}
 
