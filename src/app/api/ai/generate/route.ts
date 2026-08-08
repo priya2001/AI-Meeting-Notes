@@ -11,6 +11,7 @@ import {
   meetingNotesSchema,
   sanitizeMeetingNotes
 } from "@/lib/meeting-notes";
+import { withDbRetry } from "@/lib/db/retry";
 import { syncCurrentUser } from "@/lib/users";
 
 const openai = llmApiKey
@@ -95,10 +96,14 @@ export async function POST(request: Request) {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const [usageRow] = await dbClient
-        .select({ count: sql<number>`count(*)` })
-        .from(meetings)
-        .where(and(eq(meetings.userId, userRecord.id), gte(meetings.createdAt, thirtyDaysAgo)));
+      const [usageRow] = await withDbRetry(
+        () =>
+          dbClient
+            .select({ count: sql<number>`count(*)` })
+            .from(meetings)
+            .where(and(eq(meetings.userId, userRecord.id), gte(meetings.createdAt, thirtyDaysAgo))),
+        "meeting usage lookup"
+      );
 
       if (Number(usageRow?.count ?? 0) >= 3) {
         return NextResponse.json(
@@ -117,18 +122,22 @@ export async function POST(request: Request) {
 
   if (dbClient && userRecord) {
     try {
-      const [meeting] = await dbClient
-        .insert(meetings)
-        .values({
-          userId: userRecord.id,
-          title: notes.title,
-          transcript,
-          summary: notes.summary,
-          actionItems: formatBullets(notes.actionItems),
-          decisions: formatBullets(notes.decisions),
-          nextSteps: formatBullets(notes.nextSteps)
-        })
-        .returning();
+      const [meeting] = await withDbRetry(
+        () =>
+          dbClient
+            .insert(meetings)
+            .values({
+              userId: userRecord.id,
+              title: notes.title,
+              transcript,
+              summary: notes.summary,
+              actionItems: formatBullets(notes.actionItems),
+              decisions: formatBullets(notes.decisions),
+              nextSteps: formatBullets(notes.nextSteps)
+            })
+            .returning(),
+        "meeting insert"
+      );
 
       savedMeeting = meeting ?? null;
     } catch (error) {
