@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getDb } from "@/lib/db";
 import { meetings } from "@/lib/db/schema";
-import { env } from "@/lib/env";
+import { env, llmApiKey } from "@/lib/env";
 import {
   formatBullets,
   meetingGenerationSchema,
@@ -13,7 +13,12 @@ import {
 } from "@/lib/meeting-notes";
 import { syncCurrentUser } from "@/lib/users";
 
-const openai = env.OPENAI_API_KEY ? new OpenAI({ apiKey: env.OPENAI_API_KEY }) : null;
+const openai = llmApiKey
+  ? new OpenAI({
+      apiKey: llmApiKey,
+      baseURL: env.GROQ_API_KEY || env.Groq_API_KEY ? "https://api.groq.com/openai/v1" : undefined
+    })
+  : null;
 
 export async function POST(request: Request) {
   const { userId } = await auth();
@@ -23,7 +28,7 @@ export async function POST(request: Request) {
   }
 
   if (!openai) {
-    return NextResponse.json({ error: "OPENAI_API_KEY is not configured yet." }, { status: 503 });
+    return NextResponse.json({ error: "Set GROQ_API_KEY (or OPENAI_API_KEY) in your env file." }, { status: 503 });
   }
 
   const body = await request.json().catch(() => null);
@@ -43,7 +48,7 @@ export async function POST(request: Request) {
   const modelTitle = title ?? "Meeting transcript";
 
   const completion = await openai.chat.completions.parse({
-    model: "gpt-4o-mini",
+    model: "llama-3.3-70b-versatile",
     messages: [
       {
         role: "system",

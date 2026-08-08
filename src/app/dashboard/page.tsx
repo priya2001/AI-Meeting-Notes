@@ -65,7 +65,7 @@ export default async function DashboardPage() {
   }
 
   const setupIssues = [
-    !env.OPENAI_API_KEY ? "Add OPENAI_API_KEY so the transcript generator can run." : null,
+    !env.GROQ_API_KEY && !env.Groq_API_KEY && !env.OPENAI_API_KEY ? "Add GROQ_API_KEY so the transcript generator can run." : null,
     !env.DATABASE_URL ? "Add DATABASE_URL so meeting notes can be saved and reloaded." : null
   ].filter((item): item is string => Boolean(item));
 
@@ -164,7 +164,7 @@ export default async function DashboardPage() {
               <p className="text-sm text-cyan-200">Setup status</p>
               <h2 className="text-2xl font-semibold text-white">Core loop is in place</h2>
               <p className="text-sm leading-7 text-white/65">
-                If the database and OpenAI key are configured, this dashboard becomes a real transcript-to-notes app. If not, the app still builds and clearly tells you what to add.
+                If the database and Groq key are configured, this dashboard becomes a real transcript-to-notes app. If not, the app still builds and clearly tells you what to add.
               </p>
               {setupIssues.length ? (
                 <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-50">
