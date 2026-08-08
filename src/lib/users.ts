@@ -31,7 +31,8 @@ export async function syncCurrentUser(clerkUserId: string) {
       .returning();
 
     return userRecord ?? null;
-  } catch {
+  } catch (error) {
+    console.error("syncCurrentUser failed", error);
     return null;
   }
 }

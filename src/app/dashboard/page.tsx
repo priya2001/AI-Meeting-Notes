@@ -5,6 +5,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { AuthMenu } from "@/components/auth-menu";
 import { MeetingWorkbench } from "@/components/meeting-workbench";
 import { env } from "@/lib/env";
+import { syncCurrentUser } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,10 @@ export default async function DashboardPage() {
   if (!userId) {
     redirect("/sign-in");
   }
+
+  const userRecord = await syncCurrentUser(userId);
+  const displayName = userRecord?.name ?? "there";
+  const plan = userRecord?.subscriptionTier ?? "free";
 
   const setupIssues = [
     !env.GROQ_API_KEY && !env.Groq_API_KEY && !env.OPENAI_API_KEY ? "Add GROQ_API_KEY so the transcript generator can run." : null,
@@ -52,8 +57,8 @@ export default async function DashboardPage() {
         </div>
         <MeetingWorkbench
           initialMeetings={[]}
-          displayName="there"
-          plan="free"
+          displayName={displayName}
+          plan={plan}
           setupIssues={setupIssues}
         />
       </section>

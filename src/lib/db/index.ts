@@ -16,7 +16,7 @@ export function getDb() {
     const client = postgres(env.DATABASE_URL, {
       max: 1,
       ssl: env.DATABASE_URL.includes("localhost") ? false : "require",
-      connect_timeout: 10
+      connect_timeout: 60
     });
 
     dbInstance = drizzle(client, { schema });

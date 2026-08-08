@@ -131,7 +131,8 @@ export async function POST(request: Request) {
         .returning();
 
       savedMeeting = meeting ?? null;
-    } catch {
+    } catch (error) {
+      console.error("Failed to save meeting", error);
       savedMeeting = null;
     }
   }
