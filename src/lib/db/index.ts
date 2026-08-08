@@ -3,11 +3,23 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { env } from "@/lib/env";
 import * as schema from "./schema";
 
-const connectionString = env.DATABASE_URL ?? "";
+type Database = ReturnType<typeof drizzle>;
 
-const client = postgres(connectionString, {
-  max: 1,
-  ssl: "require"
-});
+let dbInstance: Database | null = null;
 
-export const db = drizzle(client, { schema });
+export function getDb() {
+  if (!env.DATABASE_URL) {
+    return null;
+  }
+
+  if (!dbInstance) {
+    const client = postgres(env.DATABASE_URL, {
+      max: 1,
+      ssl: env.DATABASE_URL.includes("localhost") ? false : "require"
+    });
+
+    dbInstance = drizzle(client, { schema });
+  }
+
+  return dbInstance;
+}
