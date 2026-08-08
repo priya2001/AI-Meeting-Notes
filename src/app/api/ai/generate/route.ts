@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { zodResponseFormat } from "openai/helpers/zod";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getDb } from "@/lib/db";
@@ -47,13 +46,18 @@ export async function POST(request: Request) {
   const { title, transcript } = parsedInput.data;
   const modelTitle = title ?? "Meeting transcript";
 
-  const completion = await openai.chat.completions.parse({
+  const completion = await openai.chat.completions.create({
     model: "llama-3.3-70b-versatile",
+    temperature: 0.2,
     messages: [
       {
         role: "system",
-        content:
-          "You turn meeting transcripts into concise, practical notes. Return only structured JSON with a title, summary, action items, decisions, and next steps."
+        content: [
+          "You turn meeting transcripts into concise, practical notes.",
+          "Return only valid JSON.",
+          'The JSON must match this shape: {"title":"string","summary":"string","actionItems":["string"],"decisions":["string"],"nextSteps":["string"]}.',
+          "Do not wrap the JSON in markdown fences."
+        ].join(" ")
       },
       {
         role: "user",
@@ -65,16 +69,23 @@ export async function POST(request: Request) {
         ].join("\n\n")
       }
     ],
-    response_format: zodResponseFormat(meetingNotesSchema, "meeting_notes")
   });
 
-  const generated = completion.choices[0]?.message?.parsed;
+  const rawContent = completion.choices[0]?.message?.content ?? "";
+  const parsedJson = safeParseJson(rawContent);
+  const generated = meetingNotesSchema.safeParse(parsedJson);
 
-  if (!generated) {
-    return NextResponse.json({ error: "The AI did not return a valid response." }, { status: 502 });
+  if (!generated.success) {
+    return NextResponse.json(
+      {
+        error: "The AI returned an invalid response.",
+        raw: rawContent
+      },
+      { status: 502 }
+    );
   }
 
-  const notes = sanitizeMeetingNotes(generated);
+  const notes = sanitizeMeetingNotes(generated.data);
   const dbClient = getDb();
   const userRecord = await syncCurrentUser(userId);
 
@@ -111,4 +122,15 @@ export async function POST(request: Request) {
     },
     setupNeeded: !dbClient
   });
+}
+
+function safeParseJson(value: string) {
+  const trimmed = value.trim();
+  const stripped = trimmed.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "");
+
+  try {
+    return JSON.parse(stripped);
+  } catch {
+    return null;
+  }
 }

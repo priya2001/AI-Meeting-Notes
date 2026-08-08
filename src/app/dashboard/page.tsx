@@ -51,17 +51,21 @@ export default async function DashboardPage() {
   let initialMeetings: MeetingRecord[] = [];
 
   if (db && userRecord) {
-    const rows = await db.select().from(meetings).where(eq(meetings.userId, userRecord.id)).orderBy(desc(meetings.createdAt)).limit(8);
-    initialMeetings = rows.map((row) => ({
-      id: row.id,
-      title: row.title,
-      summary: row.summary,
-      actionItems: parseBullets(row.actionItems),
-      decisions: parseBullets(row.decisions),
-      nextSteps: parseBullets(row.nextSteps),
-      transcript: row.transcript,
-      createdAt: row.createdAt.toISOString()
-    }));
+    try {
+      const rows = await db.select().from(meetings).where(eq(meetings.userId, userRecord.id)).orderBy(desc(meetings.createdAt)).limit(8);
+      initialMeetings = rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        actionItems: parseBullets(row.actionItems),
+        decisions: parseBullets(row.decisions),
+        nextSteps: parseBullets(row.nextSteps),
+        transcript: row.transcript,
+        createdAt: row.createdAt.toISOString()
+      }));
+    } catch {
+      initialMeetings = [];
+    }
   }
 
   const setupIssues = [

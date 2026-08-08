@@ -9,25 +9,29 @@ export async function syncCurrentUser(clerkUserId: string) {
     return null;
   }
 
-  const clerkUser = await currentUser();
-  const email = clerkUser?.emailAddresses?.[0]?.emailAddress ?? `${clerkUserId}@clerk.local`;
-  const name = [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ").trim() || clerkUser?.username || null;
+  try {
+    const clerkUser = await currentUser();
+    const email = clerkUser?.emailAddresses?.[0]?.emailAddress ?? `${clerkUserId}@clerk.local`;
+    const name = [clerkUser?.firstName, clerkUser?.lastName].filter(Boolean).join(" ").trim() || clerkUser?.username || null;
 
-  const [userRecord] = await db
-    .insert(users)
-    .values({
-      clerkId: clerkUserId,
-      email,
-      name
-    })
-    .onConflictDoUpdate({
-      target: users.clerkId,
-      set: {
+    const [userRecord] = await db
+      .insert(users)
+      .values({
+        clerkId: clerkUserId,
         email,
         name
-      }
-    })
-    .returning();
+      })
+      .onConflictDoUpdate({
+        target: users.clerkId,
+        set: {
+          email,
+          name
+        }
+      })
+      .returning();
 
-  return userRecord ?? null;
+    return userRecord ?? null;
+  } catch {
+    return null;
+  }
 }
