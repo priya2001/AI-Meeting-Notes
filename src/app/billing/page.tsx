@@ -8,9 +8,9 @@ export default function BillingPage() {
   const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-7xl px-6 py-10 text-white lg:px-8">
-      <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
-        <div>
+    <main className="mx-auto min-h-screen w-full max-w-7xl overflow-x-hidden px-6 pb-10 pt-16 text-white lg:px-8">
+      <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-200">Billing</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight">Manage your subscription</h1>
           <p className="mt-3 max-w-2xl text-white/65">
@@ -36,10 +36,10 @@ export default function BillingPage() {
         </div>
       </div>
 
-      <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.95fr]">
+      <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
         <BillingPanel />
 
-        <Card className="bg-white/5">
+        <Card className="min-w-0 bg-white/5">
           <CardContent className="space-y-4">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">Plan summary</p>
             {[

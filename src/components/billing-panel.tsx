@@ -110,8 +110,8 @@ export function BillingPanel() {
   const isPro = plan === "pro" || plan === "enterprise";
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
-      <Card className="bg-slate-950/70">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)]">
+      <Card className="min-w-0 bg-slate-950/70">
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
@@ -129,7 +129,7 @@ export function BillingPanel() {
               { label: "Usage", value: loading ? "..." : status?.usageLimit ? `${status.usageCount} / ${status.usageLimit}` : "Unlimited" },
               { label: "Renewal", value: isPro ? "Monthly" : "Monthly" }
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div key={item.label} className="min-w-0 rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/40">{item.label}</p>
                 <p className="mt-2 text-lg font-medium text-white">{item.value}</p>
               </div>
@@ -152,7 +152,7 @@ export function BillingPanel() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white/5">
+      <Card className="min-w-0 bg-white/5">
         <CardContent className="space-y-4">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">Actions</p>
           <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
