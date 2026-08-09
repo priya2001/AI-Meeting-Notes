@@ -123,13 +123,18 @@ export function BillingPanel() {
             </span>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {[
               { label: "Price", value: isPro ? "$19 / mo" : "$0 / mo" },
               { label: "Usage", value: loading ? "..." : status?.usageLimit ? `${status.usageCount} / ${status.usageLimit}` : "Unlimited" },
               { label: "Renewal", value: isPro ? "Monthly" : "Monthly" }
             ].map((item) => (
-              <div key={item.label} className="min-w-0 rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div
+                key={item.label}
+                className={`min-w-0 rounded-2xl border border-white/10 bg-white/5 p-4 ${
+                  item.label === "Renewal" ? "sm:col-span-2 xl:col-span-1" : ""
+                }`}
+              >
                 <p className="text-xs uppercase tracking-[0.2em] text-white/40">{item.label}</p>
                 <p className="mt-2 text-lg font-medium text-white">{item.value}</p>
               </div>
